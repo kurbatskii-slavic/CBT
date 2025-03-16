@@ -18,7 +18,6 @@ def solve(a, b, c, f):
 
     for i in range(n - 2, -1, -1):
         x[i] = alpha[i] * x[i + 1] + beta[i]
-
     return np.array(x)
 
 def u_(x):
@@ -26,5 +25,3 @@ def u_(x):
 
 def f_(x):
     return 25 * np.sin(5 * x) + 9 * np.cos(3 * x)
-#def f_(x):
- #   return 1

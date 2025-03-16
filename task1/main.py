@@ -2,7 +2,7 @@ from laplace import *
 import matplotlib.pyplot as plt
 
 N = 2
-y = [4, 10, 20, 50, 100, 250, 500, 1000, 10000]
+y = [4, 10, 20, 50, 100, 250, 500, 1000, 5000]
 L2_error = np.zeros(len(y))
 C_error = np.zeros(len(y))
 j = 0
@@ -26,7 +26,6 @@ for N in y:
     C_error[j] = np.max(error)
     j += 1
 
-print(*C_error, *L2_error)
 plt.figure(figsize=(12, 6))
 plt.plot(y, L2_error, marker='o', color='forestgreen', label='L2-norm')
 plt.plot(y, C_error, marker='o', color='y', label='Max-norm')
@@ -34,6 +33,6 @@ plt.legend()
 plt.xscale('log')
 plt.yscale('log')
 plt.xlabel('N')
-plt.ylabel('error (L2-norm)')
+plt.ylabel('error')
 plt.grid(True)
 plt.show()

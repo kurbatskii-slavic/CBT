@@ -1,0 +1,153 @@
+\documentclass[a4paper,12pt,titlepage,final]{article}
+% при подготовке финальной версии отчёта смените опцию draft на final
+
+\usepackage[T1,T2A]{fontenc}     % форматы шрифтов
+\usepackage[utf8x]{inputenc}     % кодировка символов, используемая в данном файле
+\usepackage{tikz}                % для создания иллюстраций
+\usepackage{geometry}		     % для настройки размера полей
+\usepackage{indentfirst}         % для отступа в первом абзаце секции
+\usepackage{float}
+\usepackage{listings}			 % для текста Make-файла
+\usepackage{amsmath}			 % для формул
+\usepackage{amssymb}			 % для символов
+\usepackage{diagbox}
+\usepackage{float}
+\newcommand{\cl}[1]{\mathcal{#1}}
+\newcommand{\bb}[1]{\mathbb{#1}}
+\geometry{a4paper,left=30mm,top=30mm,bottom=30mm,right=30mm}
+\begin{document}
+\begin{titlepage}
+\centering\noindent
+{
+\begin{minipage}{0.1\textwidth}
+
+\end{minipage}
+\hfill
+\begin{minipage}{0.77\textwidth}
+\begin{center}
+\textbf{МОСКОВСКИЙ ГОСУДАРСТВЕННЫЙ УНИВЕРСИТЕТ}\par
+\textbf{имени М.В.Ломоносова}\par
+\end{center}
+\end{minipage}
+\hfill
+\begin{minipage}{0.1\textwidth}
+
+\end{minipage}
+}\par
+{
+\textbf{Факультет вычислительной математики и кибернетики}\par
+\nointerlineskip
+\noindent\makebox[\linewidth]{\rule{\textwidth}{0.4pt}}
+}
+\vfill
+{
+\Large{\textbf{Практическое задание по курсу}}\par
+\Large{\textbf{«Современные вычислительные технологии»}}\par
+}\\
+{
+\Large{\textbf{Задание №1}}\par
+}
+{
+\Large{\textbf{Отчет}}\par
+\Large{\textbf{о выполненном задании}}\par
+\Large{студента 303 учебной группы факультета ВМК МГУ}\par
+\Large{Курбацкого Вячеслава Константиновича}\par
+}
+\vfill
+{\small Москва\\ \the\year{}}
+\end{titlepage}
+
+\section{Постановка задачи}
+Требуется численно решить следующую краевую задачу Дирихле:
+$$
+\begin{cases}
+-u''(x) = f(x), \quad x \in (0; 1) \\
+u(0) = a, \: u(1) = b
+\end{cases}
+$$
+Для этого на отрезке $(0; 1)$ вводится равномерная сетка $\{x_0, x_1, \ldots, x_N\}$, где $x_i = ih$, $h = 1 / N$ - шаг сетки. Обозначив $y_i = u(x_i)$ получим дискретное уравнение, приближающее уравнение Лапласа:
+$$-\frac{y_{i-1} -2y_i + y_{i+1}}{h^2} = f(x_i)$$
+Уравнения образуют следующую систему:
+$$\frac{1}{h^2}
+\begin{bmatrix}
+2 & -1 & & & & \\
+-1 & 2 & -1 & & & \\
+& -1 & 2 & -1 & & \\
+& & & \ldots & & \\
+& & & -1 & 2 & -1 \\
+& & & & -1 & 2 \\
+\end{bmatrix} = \begin{bmatrix}
+y_1 \\
+y_2 \\ 
+y_3 \\
+\ldots \\
+y_{N-2} \\
+y_{N-1} \\
+\end{bmatrix} = \begin{bmatrix}
+f(x_1) + a / h^2 \\
+f(x_2) \\ 
+f(x_3) \\
+\ldots \\
+f(x_{N-2}) \\
+f(x_{N-1}) + b / h^2 \\
+\end{bmatrix} $$
+Системы с трёхдиагональными матрицами можно решать методом прогонки.
+\section{Метод прогонки}
+Система уравнений \( Ax = F \) равносильна соотношению:
+\begin{equation}
+    A_i x_{i-1} + B_i x_i + C_i x_{i+1} = F_i.
+\end{equation}
+Здесь $A_i, B_i, C_i$ - элементы нижней, главной и верхней диагоналей соответственно.
+Метод прогонки основывается на предположении, что искомые неизвестные связаны рекуррентным соотношением:
+\begin{equation}
+    x_i = \alpha_{i+1} x_{i+1} + \beta_{i+1}, \quad i = n-1, n-2, \dots, 1.
+\end{equation}
+
+Тогда выразим \( x_{i-1} \) и \( x_i \) через \( x_{i+1} \) и подставим в уравнение (1):
+\begin{equation}
+    (A_i \alpha_i \alpha_{i+1} + B_i \alpha_i + C_i) x_{i+1} + A_i \alpha_i \beta_{i+1} + A_i \beta_i + B_i \beta_{i+1} - F_i = 0,
+\end{equation}
+где \( F_i \) — правая часть \( i \)-го уравнения. Это соотношение будет выполняться независимо от решения, если потребовать:
+\begin{equation}
+    \begin{cases}
+        A_i \alpha_i \alpha_{i+1} + B_i \alpha_i + C_i = 0, \\
+        A_i \alpha_i \beta_{i+1} + A_i \beta_i + B_i \beta_{i+1} - F_i = 0.
+    \end{cases}
+\end{equation}
+
+Отсюда следует:
+\begin{equation}
+    \begin{cases}
+        \alpha_{i+1} = \frac{-C_i}{A_i \alpha_i + B_i}, \\
+        \beta_{i+1} = \frac{F_i - A_i \beta_i}{A_i \alpha_i + B_i}.
+    \end{cases}
+\end{equation}
+
+Из первого уравнения получим:
+\begin{equation}
+    \begin{cases}
+        \alpha_2 = \frac{-C_1}{B_1}, \\
+        \beta_2 = \frac{F_1}{B_1}.
+    \end{cases}
+\end{equation}
+
+После нахождения прогонных коэффициентов \( \alpha \) и \( \beta \), используя уравнение (2), получим решение системы. При этом:
+\begin{equation}
+    x_i = \alpha_{i+1} x_{i+1} + \beta_{i+1}, \quad i = n-1, \dots, 1.
+\end{equation}
+\begin{equation}
+    x_n = \frac{F_n - A_n \beta_n}{B_n + A_n \alpha_n}.
+\end{equation}
+Пользуясь этим методом, решим систему и оценим ошибку при разных $N$.
+\section{Численные эксперименты}
+На графике ниже показано, что при увеличении числа точек действительно происходит уменьшения ошибки. Эксперимент проводился на точном решении $u(x) = \sin5x + \cos3x$, т.е. $f = -u'' =25\sin5x + 9\cos3x$.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{svt.png}
+    \caption{Зависимость ошибок в C-норме и L2-норме в зависимости от количества точек $N$}
+    \label{fig:svt}
+\end{figure}
+\section{Выводы}
+Поставленная краевая задача Дирихле была численно решена в соответствии с вариантом, предоставляющим точное решение. Для решения был использован метод прогонки для систем с трёхдиагональной матрицей. Для полученного численного решения были оценены нормы ошибок (С и L2-нормы) - отклонения от точного решения в узлах равномерной сетки. Для иллюстрации сходимости были построены графики изменения ошибки при различных $N$.
+\end{document}
+
